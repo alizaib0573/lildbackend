@@ -1,0 +1,51 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if request.auth != null && (
+        request.auth.uid == userId || 
+        request.auth.token.admin == true
+      );
+    }
+    
+    // Videos collection
+    match /videos/{videoId} {
+      allow read: if request.auth != null && (
+        resource.data.isPublished == true && 
+        resource.data.publishAt <= request.time
+      );
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+    
+    // Series collection
+    match /series/{seriesId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+    
+    // Pricing Plans collection
+    match /pricingPlans/{planId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+    
+    // Subscriptions collection
+    match /subscriptions/{subscriptionId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.user;
+    }
+    
+    // Reminders collection
+    match /reminders/{reminderId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.user;
+    }
+    
+    // Video Progress collection
+    match /videoProgress/{progressId} {
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.user;
+    }
+  }
+}
